@@ -1,16 +1,32 @@
-from datetime import datetime, timezone as dt_timezone
+import hashlib
+import hmac
 
-import stripe
+import requests
 from django.conf import settings
+from django.utils.dateparse import parse_datetime
 
 from .models import Subscription
 
-stripe.api_key = settings.STRIPE_SECRET_KEY
+API_BASE = "https://api.mercadopago.com"
 
-PLAN_BY_PRICE_ID = {
-    settings.STRIPE_MONTHLY_PRICE_ID: Subscription.Plan.MONTHLY,
-    settings.STRIPE_ANNUAL_PRICE_ID: Subscription.Plan.ANNUAL,
-}
+
+def _headers() -> dict:
+    return {
+        "Authorization": f"Bearer {settings.MERCADOPAGO_ACCESS_TOKEN}",
+        "Content-Type": "application/json",
+    }
+
+
+def _plan_amount(plan: str) -> int:
+    return (
+        settings.MERCADOPAGO_ANNUAL_AMOUNT_CLP
+        if plan == Subscription.Plan.ANNUAL
+        else settings.MERCADOPAGO_MONTHLY_AMOUNT_CLP
+    )
+
+
+def _plan_frequency_months(plan: str) -> int:
+    return 12 if plan == Subscription.Plan.ANNUAL else 1
 
 
 def get_or_create_local_subscription(user) -> Subscription:
@@ -18,67 +34,103 @@ def get_or_create_local_subscription(user) -> Subscription:
     return subscription
 
 
-def get_or_create_stripe_customer(user) -> str:
+def create_preapproval(user, plan: str, back_url: str) -> dict:
+    plan_label = dict(Subscription.Plan.choices).get(plan, plan)
+    payload = {
+        "reason": f"Suscripción {plan_label} — {settings.SITE_NAME}",
+        "external_reference": str(user.id),
+        "payer_email": user.email,
+        "back_url": back_url,
+        "auto_recurring": {
+            "frequency": _plan_frequency_months(plan),
+            "frequency_type": "months",
+            "transaction_amount": _plan_amount(plan),
+            "currency_id": "CLP",
+        },
+    }
+    response = requests.post(f"{API_BASE}/preapproval", json=payload, headers=_headers(), timeout=15)
+    response.raise_for_status()
+    data = response.json()
+
     subscription = get_or_create_local_subscription(user)
-    if subscription.stripe_customer_id:
-        return subscription.stripe_customer_id
+    subscription.plan = plan
+    subscription.mercadopago_preapproval_id = data["id"]
+    subscription.mercadopago_payer_email = user.email
+    subscription.status = data.get("status", Subscription.Status.PENDING)
+    subscription.save()
 
-    customer = stripe.Customer.create(email=user.email, name=user.get_full_name() or user.username)
-    subscription.stripe_customer_id = customer["id"]
-    subscription.save(update_fields=["stripe_customer_id"])
-    return customer["id"]
-
-
-def create_checkout_session(user, price_id: str, success_url: str, cancel_url: str):
-    customer_id = get_or_create_stripe_customer(user)
-    return stripe.checkout.Session.create(
-        customer=customer_id,
-        mode="subscription",
-        line_items=[{"price": price_id, "quantity": 1}],
-        success_url=success_url,
-        cancel_url=cancel_url,
-        client_reference_id=str(user.id),
-    )
+    return data
 
 
-def create_billing_portal_session(user, return_url: str):
-    customer_id = get_or_create_stripe_customer(user)
-    return stripe.billing_portal.Session.create(customer=customer_id, return_url=return_url)
+def fetch_preapproval(preapproval_id: str) -> dict:
+    response = requests.get(f"{API_BASE}/preapproval/{preapproval_id}", headers=_headers(), timeout=15)
+    response.raise_for_status()
+    return response.json()
 
 
-def _sync_from_stripe_subscription(stripe_subscription: dict) -> None:
-    customer_id = stripe_subscription["customer"]
-    try:
-        subscription = Subscription.objects.get(stripe_customer_id=customer_id)
-    except Subscription.DoesNotExist:
+def cancel_preapproval(subscription: Subscription) -> None:
+    if not subscription.mercadopago_preapproval_id:
+        subscription.status = Subscription.Status.CANCELLED
+        subscription.save(update_fields=["status", "updated_at"])
         return
 
-    subscription.stripe_subscription_id = stripe_subscription["id"]
-    subscription.status = stripe_subscription["status"]
+    response = requests.put(
+        f"{API_BASE}/preapproval/{subscription.mercadopago_preapproval_id}",
+        json={"status": "cancelled"},
+        headers=_headers(),
+        timeout=15,
+    )
+    response.raise_for_status()
+    subscription.status = Subscription.Status.CANCELLED
+    subscription.save(update_fields=["status", "updated_at"])
 
-    price_id = stripe_subscription["items"]["data"][0]["price"]["id"]
-    subscription.plan = PLAN_BY_PRICE_ID.get(price_id, subscription.plan)
 
-    period_end = stripe_subscription.get("current_period_end")
-    if period_end:
-        subscription.current_period_end = datetime.fromtimestamp(period_end, tz=dt_timezone.utc)
+def sync_from_preapproval_data(data: dict) -> None:
+    preapproval_id = data.get("id")
+    if not preapproval_id:
+        return
+
+    try:
+        subscription = Subscription.objects.get(mercadopago_preapproval_id=preapproval_id)
+    except Subscription.DoesNotExist:
+        external_reference = data.get("external_reference")
+        if not external_reference:
+            return
+        from apps.accounts.models import User
+
+        try:
+            user = User.objects.get(pk=external_reference)
+        except (User.DoesNotExist, ValueError):
+            return
+        subscription = get_or_create_local_subscription(user)
+        subscription.mercadopago_preapproval_id = preapproval_id
+
+    status = data.get("status")
+    if status in Subscription.Status.values:
+        subscription.status = status
+
+    subscription.mercadopago_payer_email = data.get("payer_email") or subscription.mercadopago_payer_email
+
+    next_payment_date = data.get("next_payment_date")
+    if next_payment_date:
+        subscription.next_payment_date = parse_datetime(next_payment_date)
 
     subscription.save()
 
 
-def handle_webhook_event(event: dict) -> None:
-    event_type = event["type"]
-    data_object = event["data"]["object"]
+def verify_webhook_signature(x_signature: str, x_request_id: str, data_id: str) -> bool:
+    """https://www.mercadopago.com/developers/en/docs/checkout-api/webhooks/checking-signature"""
+    if not settings.MERCADOPAGO_WEBHOOK_SECRET:
+        return True
 
-    if event_type == "checkout.session.completed":
-        stripe_subscription = stripe.Subscription.retrieve(data_object["subscription"])
-        _sync_from_stripe_subscription(stripe_subscription)
-    elif event_type in ("customer.subscription.updated", "customer.subscription.created"):
-        _sync_from_stripe_subscription(data_object)
-    elif event_type == "customer.subscription.deleted":
-        try:
-            subscription = Subscription.objects.get(stripe_customer_id=data_object["customer"])
-        except Subscription.DoesNotExist:
-            return
-        subscription.status = Subscription.Status.CANCELED
-        subscription.save(update_fields=["status", "updated_at"])
+    parts = dict(part.split("=", 1) for part in x_signature.split(",") if "=" in part)
+    ts = parts.get("ts")
+    v1 = parts.get("v1")
+    if not ts or not v1:
+        return False
+
+    manifest = f"id:{data_id.lower()};request-id:{x_request_id};ts:{ts};"
+    expected = hmac.new(
+        settings.MERCADOPAGO_WEBHOOK_SECRET.encode(), manifest.encode(), hashlib.sha256
+    ).hexdigest()
+    return hmac.compare_digest(expected, v1)

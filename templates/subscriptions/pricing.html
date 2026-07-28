@@ -8,24 +8,24 @@
     <div class="section-head center">
       <span class="eyebrow" style="color:#0b5fb3;">Suscripción</span>
       <h1 style="font-size:2.2rem;">Un plan, acceso a todo</h1>
-      <p>Suscríbete y desbloquea todos los cursos y lecciones, incluyendo el contenido nuevo que se publique.</p>
+      <p>Suscríbete y desbloquea todos los cursos y lecciones, incluyendo el contenido nuevo que se publique. Pago seguro con Mercado Pago.</p>
     </div>
 
-    {% if not stripe_configured %}
+    {% if not mercadopago_configured %}
       <div class="status-banner warn" style="max-width:800px;margin:0 auto 32px;">
-        Los pagos aún no están configurados en este sitio (faltan las claves de Stripe en <code>.env</code>).
-        Los botones de suscripción no funcionarán hasta que se agreguen.
+        Los pagos aún no están configurados en este sitio (falta el Access Token de Mercado Pago en <code>.env</code>).
+        Los botones de suscripción no funcionarán hasta que se agregue.
       </div>
     {% endif %}
 
-    {% if subscription and subscription.is_active %}
+    {% if subscription and subscription.status == "pending" %}
+      <div class="status-banner warn" style="max-width:800px;margin:0 auto 32px;text-align:center;">
+        Tu suscripción está pendiente de confirmación en Mercado Pago. Si ya autorizaste el pago, se activará en unos minutos.
+      </div>
+    {% elif subscription and subscription.is_active %}
       <div class="status-banner ok" style="max-width:800px;margin:0 auto 32px;text-align:center;">
-        Ya tienes una suscripción <strong>{{ subscription.get_status_display|lower }}</strong>
-        ({{ subscription.get_plan_display }}).
-        <form method="post" action="{% url 'subscriptions:portal' %}" style="display:inline;margin-left:10px;">
-          {% csrf_token %}
-          <button type="submit" class="btn btn-outline btn-sm">Gestionar suscripción</button>
-        </form>
+        Ya tienes una suscripción activa ({{ subscription.get_plan_display }}).
+        <a href="{% url 'subscriptions:unsubscribe_confirm' %}" class="btn btn-outline btn-sm" style="margin-left:10px;">Cancelar suscripción</a>
       </div>
     {% endif %}
 
@@ -33,7 +33,8 @@
       <div class="plan-card">
         <h3>Plan mensual</h3>
         <p style="color:var(--text-muted);">Ideal para empezar y avanzar a tu ritmo.</p>
-        <div class="plan-price">$X<span>/mes</span></div>
+        <div class="plan-price">CLP ${{ monthly_price_clp }}<span>/mes</span></div>
+        <p style="color:var(--text-soft);font-size:0.85rem;margin-top:-8px;">≈ US$15/mes</p>
         <ul class="plan-features">
           <li>Acceso a todos los cursos publicados</li>
           <li>Nuevas lecciones incluidas</li>
@@ -54,11 +55,12 @@
         <span class="plan-badge">Ahorra</span>
         <h3>Plan anual</h3>
         <p style="color:var(--text-muted);">El mismo acceso completo, con descuento por pago anual.</p>
-        <div class="plan-price">$Y<span>/año</span></div>
+        <div class="plan-price">CLP ${{ annual_price_clp }}<span>/año</span></div>
+        <p style="color:var(--text-soft);font-size:0.85rem;margin-top:-8px;">≈ US$120/año</p>
         <ul class="plan-features">
           <li>Acceso a todos los cursos publicados</li>
           <li>Nuevas lecciones incluidas</li>
-          <li>Precio preferencial frente al plan mensual</li>
+          <li>Equivale a ≈ US$10/mes — ahorras ≈ US$60 al año</li>
         </ul>
         {% if user.is_authenticated %}
           <form method="post" action="{% url 'subscriptions:checkout' %}">
@@ -73,7 +75,7 @@
     </div>
 
     <p class="text-center" style="margin-top:24px;color:var(--text-soft);font-size:0.85rem;">
-      Precios de ejemplo — edítalos en <code>templates/subscriptions/pricing.html</code> según tus valores reales de Stripe.
+      Precios en pesos chilenos (CLP), el equivalente en dólares es referencial. Ajusta los montos exactos en tu archivo <code>.env</code>.
     </p>
   </div>
 </section>

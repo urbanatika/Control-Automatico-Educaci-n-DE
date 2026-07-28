@@ -1,4 +1,6 @@
-import stripe
+import json
+
+import requests
 from django.conf import settings
 from django.contrib import messages
 from django.contrib.auth.mixins import LoginRequiredMixin
@@ -17,7 +19,11 @@ class PricingView(TemplateView):
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        context["stripe_configured"] = bool(settings.STRIPE_SECRET_KEY and settings.STRIPE_MONTHLY_PRICE_ID)
+        context["mercadopago_configured"] = bool(
+            settings.MERCADOPAGO_ACCESS_TOKEN and settings.MERCADOPAGO_MONTHLY_AMOUNT_CLP
+        )
+        context["monthly_price_clp"] = f"{settings.MERCADOPAGO_MONTHLY_AMOUNT_CLP:,}".replace(",", ".")
+        context["annual_price_clp"] = f"{settings.MERCADOPAGO_ANNUAL_AMOUNT_CLP:,}".replace(",", ".")
         if self.request.user.is_authenticated:
             context["subscription"] = getattr(self.request.user, "subscription", None)
         return context
@@ -26,63 +32,71 @@ class PricingView(TemplateView):
 class CreateCheckoutSessionView(LoginRequiredMixin, View):
     def post(self, request, *args, **kwargs):
         plan = request.POST.get("plan", "monthly")
-        price_id = (
-            settings.STRIPE_ANNUAL_PRICE_ID if plan == "annual" else settings.STRIPE_MONTHLY_PRICE_ID
-        )
 
-        if not settings.STRIPE_SECRET_KEY or not price_id:
+        if not settings.MERCADOPAGO_ACCESS_TOKEN:
             messages.error(
                 request,
-                "El pago aún no está configurado. Agrega tus claves de Stripe en el archivo .env.",
+                "El pago aún no está configurado. Agrega tu Access Token de Mercado Pago en el archivo .env.",
             )
             return redirect("subscriptions:pricing")
 
-        success_url = request.build_absolute_uri(reverse("subscriptions:success"))
-        cancel_url = request.build_absolute_uri(reverse("subscriptions:cancel"))
+        back_url = request.build_absolute_uri(reverse("subscriptions:success"))
 
         try:
-            session = services.create_checkout_session(request.user, price_id, success_url, cancel_url)
-        except stripe.error.StripeError as exc:
-            messages.error(request, f"No se pudo iniciar el pago: {exc.user_message or exc}")
+            preapproval = services.create_preapproval(request.user, plan, back_url)
+        except requests.RequestException as exc:
+            messages.error(request, f"No se pudo iniciar el pago con Mercado Pago: {exc}")
             return redirect("subscriptions:pricing")
 
-        return redirect(session.url, permanent=False)
+        return redirect(preapproval["init_point"], permanent=False)
 
 
-class BillingPortalView(LoginRequiredMixin, View):
+class UnsubscribeConfirmView(LoginRequiredMixin, TemplateView):
+    template_name = "subscriptions/unsubscribe_confirm.html"
+
+
+class UnsubscribeView(LoginRequiredMixin, View):
     def post(self, request, *args, **kwargs):
-        if not settings.STRIPE_SECRET_KEY:
-            messages.error(request, "El pago aún no está configurado.")
-            return redirect("accounts:dashboard")
-
-        return_url = request.build_absolute_uri(reverse("accounts:dashboard"))
-        try:
-            session = services.create_billing_portal_session(request.user, return_url)
-        except stripe.error.StripeError as exc:
-            messages.error(request, f"No se pudo abrir el portal de facturación: {exc.user_message or exc}")
-            return redirect("accounts:dashboard")
-
-        return redirect(session.url, permanent=False)
+        subscription = getattr(request.user, "subscription", None)
+        if subscription:
+            try:
+                services.cancel_preapproval(subscription)
+                messages.success(request, "Tu suscripción fue cancelada.")
+            except requests.RequestException as exc:
+                messages.error(request, f"No se pudo cancelar la suscripción: {exc}")
+        return redirect("accounts:dashboard")
 
 
 class SuccessView(LoginRequiredMixin, TemplateView):
     template_name = "subscriptions/success.html"
 
 
-class CancelView(TemplateView):
-    template_name = "subscriptions/cancel.html"
-
-
 @method_decorator(csrf_exempt, name="dispatch")
-class StripeWebhookView(View):
+class MercadoPagoWebhookView(View):
     def post(self, request, *args, **kwargs):
-        payload = request.body
-        sig_header = request.META.get("HTTP_STRIPE_SIGNATURE", "")
+        topic = request.GET.get("type") or request.GET.get("topic")
+        data_id = request.GET.get("data.id") or request.GET.get("id")
+
+        if not data_id and request.body:
+            try:
+                payload = json.loads(request.body)
+            except ValueError:
+                payload = {}
+            data_id = payload.get("data", {}).get("id")
+            topic = topic or payload.get("type")
+
+        if not data_id or topic not in ("preapproval", "subscription_preapproval"):
+            return HttpResponse(status=200)
+
+        x_signature = request.META.get("HTTP_X_SIGNATURE", "")
+        x_request_id = request.META.get("HTTP_X_REQUEST_ID", "")
+        if x_signature and not services.verify_webhook_signature(x_signature, x_request_id, str(data_id)):
+            return HttpResponseBadRequest("Firma inválida")
 
         try:
-            event = stripe.Webhook.construct_event(payload, sig_header, settings.STRIPE_WEBHOOK_SECRET)
-        except (ValueError, stripe.error.SignatureVerificationError):
-            return HttpResponseBadRequest("Firma de webhook inválida")
+            preapproval_data = services.fetch_preapproval(data_id)
+        except requests.RequestException:
+            return HttpResponse(status=200)
 
-        services.handle_webhook_event(event)
+        services.sync_from_preapproval_data(preapproval_data)
         return HttpResponse(status=200)
