@@ -1,0 +1,29 @@
+{% extends "base.html" %}
+
+{% block title %}Iniciar sesión · {{ site_name }}{% endblock %}
+
+{% block content %}
+<section class="section">
+  <div class="container">
+    <div class="auth-shell">
+      <h1 style="font-size:1.5rem;text-align:center;">Iniciar sesión</h1>
+      <form method="post">
+        {% csrf_token %}
+        {% for field in form %}
+          <div class="form-field">
+            <label for="{{ field.id_for_label }}">{{ field.label }}</label>
+            {{ field }}
+            {% if field.errors %}<div class="form-errors">{{ field.errors|striptags }}</div>{% endif %}
+          </div>
+        {% endfor %}
+        {% if form.non_field_errors %}
+          <div class="form-errors" style="margin-bottom:16px;">{{ form.non_field_errors|striptags }}</div>
+        {% endif %}
+        <button type="submit" class="btn btn-primary btn-block">Entrar</button>
+      </form>
+      <p class="auth-switch"><a href="{% url 'accounts:password_reset' %}">¿Olvidaste tu contraseña?</a></p>
+      <p class="auth-switch">¿No tienes cuenta? <a href="{% url 'accounts:signup' %}">Regístrate aquí</a></p>
+    </div>
+  </div>
+</section>
+{% endblock %}

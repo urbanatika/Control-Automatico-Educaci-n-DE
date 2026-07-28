@@ -1,0 +1,80 @@
+{% extends "base.html" %}
+
+{% block title %}Precios · {{ site_name }}{% endblock %}
+
+{% block content %}
+<section class="section">
+  <div class="container">
+    <div class="section-head center">
+      <span class="eyebrow" style="color:#0b5fb3;">Suscripción</span>
+      <h1 style="font-size:2.2rem;">Un plan, acceso a todo</h1>
+      <p>Suscríbete y desbloquea todos los cursos y lecciones, incluyendo el contenido nuevo que se publique.</p>
+    </div>
+
+    {% if not stripe_configured %}
+      <div class="status-banner warn" style="max-width:800px;margin:0 auto 32px;">
+        Los pagos aún no están configurados en este sitio (faltan las claves de Stripe en <code>.env</code>).
+        Los botones de suscripción no funcionarán hasta que se agreguen.
+      </div>
+    {% endif %}
+
+    {% if subscription and subscription.is_active %}
+      <div class="status-banner ok" style="max-width:800px;margin:0 auto 32px;text-align:center;">
+        Ya tienes una suscripción <strong>{{ subscription.get_status_display|lower }}</strong>
+        ({{ subscription.get_plan_display }}).
+        <form method="post" action="{% url 'subscriptions:portal' %}" style="display:inline;margin-left:10px;">
+          {% csrf_token %}
+          <button type="submit" class="btn btn-outline btn-sm">Gestionar suscripción</button>
+        </form>
+      </div>
+    {% endif %}
+
+    <div class="plans-grid">
+      <div class="plan-card">
+        <h3>Plan mensual</h3>
+        <p style="color:var(--text-muted);">Ideal para empezar y avanzar a tu ritmo.</p>
+        <div class="plan-price">$X<span>/mes</span></div>
+        <ul class="plan-features">
+          <li>Acceso a todos los cursos publicados</li>
+          <li>Nuevas lecciones incluidas</li>
+          <li>Cancela cuando quieras</li>
+        </ul>
+        {% if user.is_authenticated %}
+          <form method="post" action="{% url 'subscriptions:checkout' %}">
+            {% csrf_token %}
+            <input type="hidden" name="plan" value="monthly">
+            <button type="submit" class="btn btn-outline btn-block">Suscribirme mensual</button>
+          </form>
+        {% else %}
+          <a href="{% url 'accounts:signup' %}?next={% url 'subscriptions:pricing' %}" class="btn btn-outline btn-block">Crear cuenta para suscribirme</a>
+        {% endif %}
+      </div>
+
+      <div class="plan-card featured">
+        <span class="plan-badge">Ahorra</span>
+        <h3>Plan anual</h3>
+        <p style="color:var(--text-muted);">El mismo acceso completo, con descuento por pago anual.</p>
+        <div class="plan-price">$Y<span>/año</span></div>
+        <ul class="plan-features">
+          <li>Acceso a todos los cursos publicados</li>
+          <li>Nuevas lecciones incluidas</li>
+          <li>Precio preferencial frente al plan mensual</li>
+        </ul>
+        {% if user.is_authenticated %}
+          <form method="post" action="{% url 'subscriptions:checkout' %}">
+            {% csrf_token %}
+            <input type="hidden" name="plan" value="annual">
+            <button type="submit" class="btn btn-primary btn-block">Suscribirme anual</button>
+          </form>
+        {% else %}
+          <a href="{% url 'accounts:signup' %}?next={% url 'subscriptions:pricing' %}" class="btn btn-primary btn-block">Crear cuenta para suscribirme</a>
+        {% endif %}
+      </div>
+    </div>
+
+    <p class="text-center" style="margin-top:24px;color:var(--text-soft);font-size:0.85rem;">
+      Precios de ejemplo — edítalos en <code>templates/subscriptions/pricing.html</code> según tus valores reales de Stripe.
+    </p>
+  </div>
+</section>
+{% endblock %}

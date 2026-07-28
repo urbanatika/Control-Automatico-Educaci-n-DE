@@ -1,0 +1,60 @@
+{% extends "base.html" %}
+
+{% block title %}{{ course.title }} · {{ site_name }}{% endblock %}
+
+{% block content %}
+<section class="section">
+  <div class="container">
+    <div class="breadcrumb">
+      <a href="{% url 'courses:catalog' %}">Cursos</a> / {{ course.track.name }} / {{ course.title }}
+    </div>
+
+    <div class="detail-layout">
+      <div>
+        <div class="detail-header">
+          <span class="badge badge-{{ course.level }}">{{ course.get_level_display }}</span>
+          <h1 style="font-size:2rem;margin-top:12px;">{{ course.title }}</h1>
+          <p style="color:var(--text-muted);font-size:1.05rem;">{{ course.summary }}</p>
+          <div class="course-meta-row" style="margin-top:8px;">
+            <span>{{ course.lesson_count }} lecciones</span>
+            <span>{{ course.total_duration_minutes }} min</span>
+            <span>Eje: {{ course.track.name }}</span>
+          </div>
+        </div>
+
+        <h3>Sobre este curso</h3>
+        <p style="color:var(--text-muted);white-space:pre-line;">{{ course.description }}</p>
+
+        {% if not has_access %}
+          <div class="upsell-box">
+            <h4>Desbloquea este curso</h4>
+            <p>Suscríbete para acceder a todas las lecciones de este curso y del resto del catálogo.</p>
+            <a href="{% url 'subscriptions:pricing' %}" class="btn btn-primary">Ver planes</a>
+          </div>
+        {% endif %}
+      </div>
+
+      <aside class="sidebar-card">
+        <h4>Contenido del curso</h4>
+        {% for module in course.modules.all %}
+          <div class="module-block">
+            <div class="module-title">{{ module.title }}</div>
+            {% for lesson in module.lessons.all %}
+              <a href="{{ lesson.get_absolute_url }}"
+                 class="lesson-link {% if lesson.is_free_preview %}is-free{% elif not has_access %}is-locked{% endif %}">
+                <span class="status-icon">
+                  {% if has_access or lesson.is_free_preview %}▶{% else %}🔒{% endif %}
+                </span>
+                <span>{{ lesson.title }}</span>
+                <span class="lesson-duration">{{ lesson.duration_minutes }} min</span>
+              </a>
+            {% endfor %}
+          </div>
+        {% empty %}
+          <p style="padding:16px 20px;color:var(--text-soft);">Este curso aún no tiene módulos publicados.</p>
+        {% endfor %}
+      </aside>
+    </div>
+  </div>
+</section>
+{% endblock %}

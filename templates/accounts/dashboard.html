@@ -1,0 +1,50 @@
+{% extends "base.html" %}
+
+{% block title %}Mi cuenta · {{ site_name }}{% endblock %}
+
+{% block content %}
+<section class="section">
+  <div class="container">
+    <div class="section-head">
+      <h1 style="font-size:2rem;">Hola, {{ user.first_name|default:user.username }} 👋</h1>
+    </div>
+
+    <div class="dashboard-grid">
+      <div class="stat-card">
+        <h3 style="font-size:1rem;">Estado de suscripción</h3>
+        {% if subscription and subscription.is_active %}
+          <p class="status-banner ok">Activa — {{ subscription.get_plan_display }}</p>
+          {% if subscription.current_period_end %}
+            <p style="font-size:0.85rem;color:var(--text-soft);">Renueva el {{ subscription.current_period_end|date:"d/m/Y" }}</p>
+          {% endif %}
+          <form method="post" action="{% url 'subscriptions:portal' %}">
+            {% csrf_token %}
+            <button type="submit" class="btn btn-outline btn-block btn-sm">Gestionar facturación</button>
+          </form>
+        {% else %}
+          <p class="status-banner warn">Sin suscripción activa</p>
+          <a href="{% url 'subscriptions:pricing' %}" class="btn btn-primary btn-block btn-sm">Suscribirme</a>
+        {% endif %}
+
+        <hr style="border:none;border-top:1px solid var(--border);margin:20px 0;">
+        <a href="{% url 'accounts:password_change' %}" class="btn btn-outline btn-block btn-sm">Cambiar contraseña</a>
+      </div>
+
+      <div>
+        <h3 style="font-size:1.1rem;margin-bottom:16px;">Continúa aprendiendo</h3>
+        <div class="tracks-grid">
+          {% for track in tracks %}
+            <a href="{% url 'courses:catalog' %}#track-{{ track.slug }}" class="track-card">
+              <div class="track-icon">{{ track.icon|default:"⚙" }}</div>
+              <h3>{{ track.name }}</h3>
+              <span class="track-meta">{{ track.courses.count }} curso{{ track.courses.count|pluralize }}</span>
+            </a>
+          {% empty %}
+            <p>Aún no hay cursos publicados.</p>
+          {% endfor %}
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+{% endblock %}

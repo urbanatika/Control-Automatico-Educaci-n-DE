@@ -1,0 +1,87 @@
+{% load static %}<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>{% block title %}{{ site_name }}{% endblock %}</title>
+  <meta name="description" content="{% block meta_description %}Cursos y clases de control automático: control lineal, no lineal, linealización, estrategias avanzadas, historia, herramientas y aplicaciones de laboratorio e industriales.{% endblock %}">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Space+Grotesk:wght@600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="{% static 'css/style.css' %}">
+  {% block extra_head %}{% endblock %}
+</head>
+<body>
+  <header class="navbar">
+    <div class="container">
+      <a href="{% url 'core:home' %}" class="brand">
+        <span class="brand-mark">DE</span>
+        <span>Diego Elorza <span style="opacity:.55;font-weight:500;">· Control Automático</span></span>
+      </a>
+      <nav>
+        <ul class="nav-links">
+          <li><a href="{% url 'core:home' %}">Inicio</a></li>
+          <li><a href="{% url 'courses:catalog' %}">Cursos</a></li>
+          <li><a href="{% url 'core:about' %}">Sobre mí</a></li>
+          <li><a href="{% url 'subscriptions:pricing' %}">Precios</a></li>
+        </ul>
+      </nav>
+      <div class="nav-actions">
+        {% if user.is_authenticated %}
+          <a href="{% url 'accounts:dashboard' %}" class="btn btn-ghost btn-sm">Mi cuenta</a>
+        {% else %}
+          <a href="{% url 'accounts:login' %}" class="btn btn-ghost btn-sm">Iniciar sesión</a>
+          <a href="{% url 'subscriptions:pricing' %}" class="btn btn-primary btn-sm">Suscribirme</a>
+        {% endif %}
+      </div>
+    </div>
+  </header>
+
+  <main>
+    {% if messages %}
+      <div class="container" style="padding-top:24px;">
+        <ul class="messages">
+          {% for message in messages %}
+            <li class="{{ message.tags }}">{{ message }}</li>
+          {% endfor %}
+        </ul>
+      </div>
+    {% endif %}
+    {% block content %}{% endblock %}
+  </main>
+
+  <footer class="footer">
+    <div class="container">
+      <div class="footer-grid">
+        <div>
+          <h4>Diego Elorza · Control Automático</h4>
+          <p style="max-width:38ch;">Formación práctica en control automático: de los fundamentos del control lineal a las estrategias avanzadas de control no lineal, con foco en aplicaciones reales de laboratorio e industria.</p>
+        </div>
+        <div>
+          <h4>Navegación</h4>
+          <ul>
+            <li><a href="{% url 'courses:catalog' %}">Cursos</a></li>
+            <li><a href="{% url 'core:about' %}">Sobre mí</a></li>
+            <li><a href="{% url 'subscriptions:pricing' %}">Precios</a></li>
+          </ul>
+        </div>
+        <div>
+          <h4>Cuenta</h4>
+          <ul>
+            {% if user.is_authenticated %}
+              <li><a href="{% url 'accounts:dashboard' %}">Mi cuenta</a></li>
+              <li><a href="{% url 'accounts:logout' %}">Cerrar sesión</a></li>
+            {% else %}
+              <li><a href="{% url 'accounts:login' %}">Iniciar sesión</a></li>
+              <li><a href="{% url 'accounts:signup' %}">Crear cuenta</a></li>
+            {% endif %}
+          </ul>
+        </div>
+      </div>
+      <div class="footer-bottom">
+        <span>&copy; {% now "Y" %} Diego Elorza. Todos los derechos reservados.</span>
+        <span>Hecho para ingenieros, estudiantes y curiosos del control automático.</span>
+      </div>
+    </div>
+  </footer>
+</body>
+</html>

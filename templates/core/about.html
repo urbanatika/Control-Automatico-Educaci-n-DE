@@ -1,0 +1,44 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Sobre mí · {{ site_name }}{% endblock %}
+
+{% block content %}
+<section class="section">
+  <div class="container" style="max-width:820px;">
+    <span class="eyebrow" style="color:#0b5fb3;">Sobre mí</span>
+    <h1 style="font-size:2.2rem;">Mi trayectoria en control automático</h1>
+
+    {% comment %}
+    Reemplaza este contenido con tu historia real: formación, hitos profesionales,
+    proyectos relevantes de laboratorio/industria y tu motivación para enseñar.
+    {% endcomment %}
+    <p style="font-size:1.05rem;color:var(--text-muted);">
+      [Cuenta aquí tu historia: dónde estudiaste, en qué proyectos de control automático
+      has trabajado (industriales, de investigación o de laboratorio), qué te llevó a
+      especializarte en control lineal y no lineal, y por qué decidiste crear este espacio
+      para enseñar.]
+    </p>
+    <p style="font-size:1.05rem;color:var(--text-muted);">
+      [Puedes agregar un segundo párrafo con tus certificaciones, publicaciones, docencia
+      universitaria u otros hitos relevantes.]
+    </p>
+
+    <div class="track-card" style="margin-top:32px;">
+      <h3>¿Por qué este sitio?</h3>
+      <p>
+        Este espacio reúne, en un solo lugar, el recorrido completo del control automático:
+        desde los fundamentos del control lineal hasta las técnicas y estrategias avanzadas
+        de control no lineal, pasando por la linealización de sistemas, la evolución histórica
+        de la disciplina, las herramientas que se usan hoy en la industria y ejemplos reales
+        de laboratorio e industria.
+      </p>
+    </div>
+
+    <div class="hero-actions mt-lg">
+      <a href="{% url 'courses:catalog' %}" class="btn btn-primary">Explorar cursos</a>
+      <a href="{% url 'subscriptions:pricing' %}" class="btn btn-outline">Ver planes de suscripción</a>
+    </div>
+  </div>
+</section>
+{% endblock %}

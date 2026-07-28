@@ -1,0 +1,16 @@
+{% extends "base.html" %}
+
+{% block title %}¡Gracias por suscribirte! · {{ site_name }}{% endblock %}
+
+{% block content %}
+<section class="section">
+  <div class="container text-center" style="max-width:560px;">
+    <h1>¡Suscripción confirmada! 🎉</h1>
+    <p style="color:var(--text-muted);">
+      Gracias por suscribirte. Tu acceso se activará en cuanto Stripe confirme el pago
+      (normalmente en segundos). Si algún curso aparece bloqueado, recarga la página en un momento.
+    </p>
+    <a href="{% url 'courses:catalog' %}" class="btn btn-primary">Ir al catálogo de cursos</a>
+  </div>
+</section>
+{% endblock %}

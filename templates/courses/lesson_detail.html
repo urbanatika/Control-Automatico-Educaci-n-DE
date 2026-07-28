@@ -1,0 +1,65 @@
+{% extends "base.html" %}
+
+{% block title %}{{ lesson.title }} · {{ course.title }} · {{ site_name }}{% endblock %}
+
+{% block content %}
+<section class="section">
+  <div class="container">
+    <div class="breadcrumb">
+      <a href="{% url 'courses:catalog' %}">Cursos</a> /
+      <a href="{{ course.get_absolute_url }}">{{ course.title }}</a> / {{ lesson.title }}
+    </div>
+
+    <div class="detail-layout">
+      <div>
+        <div class="player-wrap">
+          {% if can_watch and lesson.vimeo_id %}
+            <iframe src="https://player.vimeo.com/video/{{ lesson.vimeo_id }}"
+                    allow="autoplay; fullscreen; picture-in-picture" allowfullscreen></iframe>
+          {% elif can_watch %}
+            <div class="player-locked">
+              <div class="lock-icon">🎬</div>
+              <p>Esta lección aún no tiene video cargado.</p>
+            </div>
+          {% else %}
+            <div class="player-locked">
+              <div class="lock-icon">🔒</div>
+              <p><strong>Contenido para suscriptores</strong><br>Suscríbete para ver esta lección y todo el curso.</p>
+              <a href="{% url 'subscriptions:pricing' %}" class="btn btn-primary btn-sm">Ver planes</a>
+            </div>
+          {% endif %}
+        </div>
+
+        <div class="detail-header" style="margin-top:24px;">
+          {% if lesson.is_free_preview %}<span class="badge badge-free">Vista previa gratuita</span>{% endif %}
+          <h1 style="font-size:1.7rem;margin-top:10px;">{{ lesson.title }}</h1>
+          <p style="color:var(--text-muted);">{{ lesson.duration_minutes }} min · Módulo: {{ lesson.module.title }}</p>
+        </div>
+
+        {% if lesson.description %}
+          <p style="color:var(--text-muted);white-space:pre-line;">{{ lesson.description }}</p>
+        {% endif %}
+      </div>
+
+      <aside class="sidebar-card">
+        <h4>{{ course.title }}</h4>
+        {% for module in modules %}
+          <div class="module-block">
+            <div class="module-title">{{ module.title }}</div>
+            {% for l in module.lessons.all %}
+              <a href="{{ l.get_absolute_url }}"
+                 class="lesson-link {% if l == lesson %}active{% endif %} {% if l.is_free_preview %}is-free{% elif not has_access %}is-locked{% endif %}">
+                <span class="status-icon">
+                  {% if has_access or l.is_free_preview %}▶{% else %}🔒{% endif %}
+                </span>
+                <span>{{ l.title }}</span>
+                <span class="lesson-duration">{{ l.duration_minutes }} min</span>
+              </a>
+            {% endfor %}
+          </div>
+        {% endfor %}
+      </aside>
+    </div>
+  </div>
+</section>
+{% endblock %}

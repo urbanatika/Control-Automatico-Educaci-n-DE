@@ -1,0 +1,109 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block content %}
+{% comment %}
+HERO: reemplaza la foto en static/images/profile.jpg (o cambia el
+src de abajo) y edita el texto de la reseña con tu propia historia.
+{% endcomment %}
+<section class="hero">
+  <div class="container">
+    <div class="hero-photo">
+      <div class="hero-photo-frame">
+        <img src="{% static 'images/profile-placeholder.svg' %}" alt="Foto de Diego Elorza">
+      </div>
+      <div class="hero-photo-badge">
+        <strong>Control Automático</strong>
+        De lo lineal a lo no lineal
+      </div>
+    </div>
+
+    <div class="hero-content">
+      <span class="eyebrow">Aprende control automático desde cero hasta nivel avanzado</span>
+      <h1 class="hero-title">Hola, soy <span>Diego Elorza</span></h1>
+      <p class="hero-tagline">[Tu título profesional — ej. Ingeniero Civil en Automatización / Docente e investigador en control automático]</p>
+      <p class="hero-bio">
+        [Escribe aquí tu breve reseña: tu formación, los años dedicados al control automático,
+        los proyectos de laboratorio e industria en los que has trabajado, y por qué decidiste
+        enseñar. Dos o tres frases son suficientes — esta sección aparece justo al lado de tu foto.]
+      </p>
+
+      <div class="hero-actions">
+        <a href="{% url 'courses:catalog' %}" class="btn btn-primary">Ver cursos</a>
+        <a href="{% url 'core:about' %}" class="btn btn-ghost">Conoce mi trayectoria</a>
+      </div>
+
+      <div class="hero-topics">
+        <span class="pill">Control lineal</span>
+        <span class="pill">Control no lineal</span>
+        <span class="pill">Linealización</span>
+        <span class="pill">Estrategias avanzadas</span>
+        <span class="pill">Recorrido histórico</span>
+        <span class="pill">Herramientas de control</span>
+        <span class="pill">Aplicaciones de laboratorio e industriales</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="section">
+  <div class="container">
+    <div class="section-head center">
+      <span class="eyebrow" style="color:#0b5fb3;">Programa</span>
+      <h2>Un recorrido completo por el control automático</h2>
+      <p>Desde los fundamentos del control lineal hasta las estrategias avanzadas de control no lineal, con teoría, historia, herramientas y aplicaciones reales.</p>
+    </div>
+
+    <div class="tracks-grid">
+      {% for track in tracks %}
+        <a href="{% url 'courses:catalog' %}#track-{{ track.slug }}" class="track-card">
+          <div class="track-icon">{{ track.icon|default:"⚙" }}</div>
+          <h3>{{ track.name }}</h3>
+          <p>{{ track.description|truncatewords:22 }}</p>
+          <span class="track-meta">{{ track.courses.count }} curso{{ track.courses.count|pluralize }}</span>
+        </a>
+      {% empty %}
+        <p>Pronto verás aquí el programa completo de cursos.</p>
+      {% endfor %}
+    </div>
+  </div>
+</section>
+
+<section class="section section-alt">
+  <div class="container">
+    <div class="section-head center">
+      <span class="eyebrow" style="color:#0b5fb3;">Metodología</span>
+      <h2>Teoría sólida, siempre conectada a la práctica</h2>
+    </div>
+    <div class="tracks-grid">
+      <div class="track-card">
+        <div class="track-icon">📐</div>
+        <h3>Del concepto a la implementación</h3>
+        <p>Cada tema parte de la base matemática y termina en un sistema controlado real, en simulación o en laboratorio.</p>
+      </div>
+      <div class="track-card">
+        <div class="track-icon">🏭</div>
+        <h3>Casos de laboratorio e industria</h3>
+        <p>Ejemplos aplicados a procesos industriales y montajes de laboratorio, no solo ejercicios de pizarrón.</p>
+      </div>
+      <div class="track-card">
+        <div class="track-icon">🎥</div>
+        <h3>Video-clases a tu ritmo</h3>
+        <p>Accede cuando quieras, repite las clases las veces que necesites y avanza a tu propio ritmo.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="section">
+  <div class="container">
+    <div class="cta-band">
+      <div>
+        <h2>Accede a todos los cursos con una sola suscripción</h2>
+        <p>Un plan, acceso completo a las clases y a todo el contenido nuevo que se publique.</p>
+      </div>
+      <a href="{% url 'subscriptions:pricing' %}" class="btn btn-primary">Ver planes</a>
+    </div>
+  </div>
+</section>
+{% endblock %}

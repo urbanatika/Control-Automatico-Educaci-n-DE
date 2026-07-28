@@ -1,0 +1,59 @@
+{% extends "base.html" %}
+
+{% block title %}Cursos · {{ site_name }}{% endblock %}
+
+{% block content %}
+<section class="section" style="padding-bottom:0;">
+  <div class="container">
+    <div class="section-head">
+      <span class="eyebrow" style="color:#0b5fb3;">Catálogo</span>
+      <h1 style="font-size:2.2rem;">Todos los cursos</h1>
+      <p>Organizados por eje temático: de los fundamentos del control lineal a las estrategias avanzadas de control no lineal.</p>
+    </div>
+  </div>
+</section>
+
+<section class="section" style="padding-top:24px;">
+  <div class="container">
+    {% for track in tracks %}
+      <div class="track-section" id="track-{{ track.slug }}">
+        <div class="track-section-head">
+          <div>
+            <h2>{{ track.icon|default:"⚙" }} {{ track.name }}</h2>
+            {% if track.description %}<p style="color:var(--text-muted);margin:4px 0 0;">{{ track.description }}</p>{% endif %}
+          </div>
+        </div>
+
+        <div class="course-grid">
+          {% for course in track.courses.all %}
+            {% if course.is_published %}
+              <a href="{{ course.get_absolute_url }}" class="course-card">
+                <div class="course-thumb">
+                  {% if course.thumbnail %}
+                    <img src="{{ course.thumbnail.url }}" alt="{{ course.title }}">
+                  {% else %}
+                    <span>{{ track.icon|default:"⚙" }}</span>
+                  {% endif %}
+                </div>
+                <div class="course-body">
+                  <span class="badge badge-{{ course.level }}">{{ course.get_level_display }}</span>
+                  <h3>{{ course.title }}</h3>
+                  <p>{{ course.summary }}</p>
+                  <div class="course-meta-row">
+                    <span>{{ course.lesson_count }} lecciones</span>
+                    <span>{{ course.total_duration_minutes }} min</span>
+                  </div>
+                </div>
+              </a>
+            {% endif %}
+          {% empty %}
+            <p>Aún no hay cursos publicados en este eje.</p>
+          {% endfor %}
+        </div>
+      </div>
+    {% empty %}
+      <p>Muy pronto publicaremos el catálogo completo de cursos.</p>
+    {% endfor %}
+  </div>
+</section>
+{% endblock %}
