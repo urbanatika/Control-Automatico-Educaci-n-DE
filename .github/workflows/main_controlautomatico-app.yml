@@ -22,7 +22,7 @@ jobs:
         python-version: '3.12'
 
     - name: 'Deploy to Azure Web App'
-      uses: azure/webapps-deploy@v3
+      uses: azure/webapps-deploy@v2
       with:
         app-name: 'controlautomatico-app'
         slot-name: 'production'
