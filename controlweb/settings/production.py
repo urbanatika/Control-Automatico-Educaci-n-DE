@@ -12,6 +12,14 @@ STORAGES = {
     "staticfiles": {"BACKEND": "whitenoise.storage.CompressedManifestStaticFilesStorage"},
 }
 
+AZURE_ACCOUNT_NAME = os.environ.get("AZURE_ACCOUNT_NAME", "")
+AZURE_ACCOUNT_KEY = os.environ.get("AZURE_ACCOUNT_KEY", "")
+AZURE_CONTAINER = os.environ.get("AZURE_CONTAINER", "media")
+
+if AZURE_ACCOUNT_NAME and AZURE_ACCOUNT_KEY:
+    STORAGES["default"] = {"BACKEND": "storages.backends.azure_storage.AzureStorage"}
+    MEDIA_URL = f"https://{AZURE_ACCOUNT_NAME}.blob.core.windows.net/{AZURE_CONTAINER}/"
+
 SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
 SECURE_BROWSER_XSS_FILTER = True
 SECURE_CONTENT_TYPE_NOSNIFF = True
