@@ -109,6 +109,16 @@ CONTACT_EMAIL = os.environ.get("CONTACT_EMAIL", "diego@urbanatika.org")
 LEGAL_ENTITY_NAME = os.environ.get("LEGAL_ENTITY_NAME", "Urbanatika")
 LEGAL_ENTITY_RUT = os.environ.get("LEGAL_ENTITY_RUT", "65.177.213-3")
 
+# Formulario de contacto: a dónde se envían los mensajes del sitio.
+CONTACT_FORM_RECIPIENT = os.environ.get("CONTACT_FORM_RECIPIENT", "contacto@urbanatika.org")
+DEFAULT_FROM_EMAIL = os.environ.get("DEFAULT_FROM_EMAIL", f"{SITE_OWNER_NAME} <{CONTACT_EMAIL}>")
+
+# Redes sociales de Diego Elorza (footer). Deja en blanco para ocultar un ícono.
+SOCIAL_INSTAGRAM_URL = os.environ.get("SOCIAL_INSTAGRAM_URL", "https://www.instagram.com/diegoelorza/")
+SOCIAL_LINKEDIN_URL = os.environ.get("SOCIAL_LINKEDIN_URL", "https://www.linkedin.com/in/diegoelorza/")
+SOCIAL_YOUTUBE_URL = os.environ.get("SOCIAL_YOUTUBE_URL", "https://www.youtube.com/@urbanatika")
+SOCIAL_X_URL = os.environ.get("SOCIAL_X_URL", "https://x.com/elorza_diego")
+
 # Mercado Pago (usa credenciales de prueba primero — ver .env.example)
 MERCADOPAGO_ACCESS_TOKEN = os.environ.get("MERCADOPAGO_ACCESS_TOKEN", "")
 MERCADOPAGO_PUBLIC_KEY = os.environ.get("MERCADOPAGO_PUBLIC_KEY", "")

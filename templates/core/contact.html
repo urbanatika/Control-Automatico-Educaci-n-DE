@@ -1,0 +1,38 @@
+{% extends "base.html" %}
+
+{% block title %}Contacto · {{ site_name }}{% endblock %}
+{% block meta_description %}Escríbenos tus consultas sobre los cursos de {{ site_name }}.{% endblock %}
+
+{% block content %}
+<section class="section">
+  <div class="container" style="max-width:620px;">
+    <span class="eyebrow" style="color:#0b5fb3;">Contacto</span>
+    <h1 style="font-size:2.2rem;">Escríbenos</h1>
+    <p style="color:var(--text-muted);">
+      ¿Tienes dudas sobre los cursos, tu suscripción o algún problema con tu cuenta? Cuéntanos y te
+      responderemos a la brevedad a través de {{ contact_form_recipient }}.
+    </p>
+
+    <form method="post" class="mt-lg" style="max-width:520px;">
+      {% csrf_token %}
+      {% for field in form %}
+        {% if field.name != "honeypot" %}
+          <div class="form-field">
+            <label for="{{ field.id_for_label }}">{{ field.label }}</label>
+            {{ field }}
+            {% if field.help_text %}<div class="form-help">{{ field.help_text|safe }}</div>{% endif %}
+            {% if field.errors %}<div class="form-errors">{{ field.errors|striptags }}</div>{% endif %}
+          </div>
+        {% endif %}
+      {% endfor %}
+      {{ form.honeypot }}
+      <button type="submit" class="btn btn-primary btn-block">Enviar mensaje</button>
+    </form>
+
+    <p style="margin-top:24px;color:var(--text-soft);font-size:0.9rem;">
+      También puedes escribirnos directamente a
+      <a href="mailto:{{ contact_form_recipient }}">{{ contact_form_recipient }}</a>.
+    </p>
+  </div>
+</section>
+{% endblock %}

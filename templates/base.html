@@ -41,6 +41,7 @@
           <li><a href="{% url 'courses:catalog' %}">Cursos</a></li>
           <li><a href="{% url 'core:about' %}">Sobre mí</a></li>
           <li><a href="{% url 'subscriptions:pricing' %}">Precios</a></li>
+          <li><a href="{% url 'core:contact' %}">Contacto</a></li>
         </ul>
       </nav>
       <div class="nav-actions">
@@ -73,6 +74,28 @@
         <div>
           <h4>Diego Elorza · Control Automático</h4>
           <p style="max-width:38ch;">Formación práctica en control automático: de los fundamentos del control lineal a las estrategias avanzadas de control no lineal, con foco en aplicaciones reales de laboratorio e industria.</p>
+          <div class="social-links">
+            {% if social_instagram_url %}
+              <a href="{{ social_instagram_url }}" target="_blank" rel="noopener noreferrer" aria-label="Instagram">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="2" width="20" height="20" rx="5"/><circle cx="12" cy="12" r="4"/><circle cx="17.5" cy="6.5" r="1" fill="currentColor" stroke="none"/></svg>
+              </a>
+            {% endif %}
+            {% if social_linkedin_url %}
+              <a href="{{ social_linkedin_url }}" target="_blank" rel="noopener noreferrer" aria-label="LinkedIn">
+                <svg viewBox="0 0 24 24" fill="currentColor"><path d="M4.98 3.5C4.98 4.88 3.9 6 2.5 6S0 4.88 0 3.5 1.12 1 2.5 1 4.98 2.12 4.98 3.5zM.24 8.24h4.5V23h-4.5V8.24zM8.5 8.24h4.3v2.02h.06c.6-1.13 2.06-2.32 4.24-2.32 4.53 0 5.37 2.98 5.37 6.86V23h-4.5v-6.83c0-1.63-.03-3.72-2.27-3.72-2.27 0-2.62 1.77-2.62 3.6V23h-4.5V8.24z"/></svg>
+              </a>
+            {% endif %}
+            {% if social_youtube_url %}
+              <a href="{{ social_youtube_url }}" target="_blank" rel="noopener noreferrer" aria-label="YouTube">
+                <svg viewBox="0 0 24 24" fill="currentColor"><path d="M23.5 6.2s-.23-1.64-.94-2.36c-.9-.94-1.9-.94-2.36-1C17 2.5 12 2.5 12 2.5h-.01s-5 0-8.2.34c-.46.06-1.46.06-2.36 1C.72 4.56.5 6.2.5 6.2S.25 8.13.25 10.07v1.85c0 1.94.25 3.88.25 3.88s.23 1.64.94 2.36c.9.94 2.08.9 2.6 1.01 1.89.18 8-.24 8.02-.24s5.01-.01 8.21-.35c.46-.06 1.46-.06 2.36-1 .71-.72.94-2.36.94-2.36s.25-1.94.25-3.88v-1.85c0-1.94-.25-3.87-.25-3.87zM9.55 14.9V7.7l6.9 3.62-6.9 3.58z"/></svg>
+              </a>
+            {% endif %}
+            {% if social_x_url %}
+              <a href="{{ social_x_url }}" target="_blank" rel="noopener noreferrer" aria-label="X (Twitter)">
+                <svg viewBox="0 0 24 24" fill="currentColor"><path d="M18.9 2H22l-7.4 8.4L23 22h-6.9l-5.4-7-6.2 7H1.4l7.9-9L1 2h7l4.9 6.4L18.9 2zm-2.4 18h1.9L7.6 4h-2L16.5 20z"/></svg>
+              </a>
+            {% endif %}
+          </div>
         </div>
         <div>
           <h4>Navegación</h4>
@@ -80,6 +103,7 @@
             <li><a href="{% url 'courses:catalog' %}">Cursos</a></li>
             <li><a href="{% url 'core:about' %}">Sobre mí</a></li>
             <li><a href="{% url 'subscriptions:pricing' %}">Precios</a></li>
+            <li><a href="{% url 'core:contact' %}">Contacto</a></li>
           </ul>
         </div>
         <div>
