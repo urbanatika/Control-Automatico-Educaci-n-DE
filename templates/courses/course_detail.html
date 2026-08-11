@@ -1,6 +1,13 @@
 {% extends "base.html" %}
 
 {% block title %}{{ course.title }} · {{ site_name }}{% endblock %}
+{% block meta_description %}{{ course.summary }}{% endblock %}
+{% block og_title %}{{ course.title }} · {{ site_name }}{% endblock %}
+{% block og_description %}{{ course.summary }}{% endblock %}
+{% block twitter_title %}{{ course.title }} · {{ site_name }}{% endblock %}
+{% block twitter_description %}{{ course.summary }}{% endblock %}
+{% block og_image %}{% if course.thumbnail and "://" in course.thumbnail.url %}{{ course.thumbnail.url }}{% elif course.thumbnail %}{{ request.scheme }}://{{ request.get_host }}{{ course.thumbnail.url }}{% else %}{{ block.super }}{% endif %}{% endblock %}
+{% block twitter_image %}{% if course.thumbnail and "://" in course.thumbnail.url %}{{ course.thumbnail.url }}{% elif course.thumbnail %}{{ request.scheme }}://{{ request.get_host }}{{ course.thumbnail.url }}{% else %}{{ block.super }}{% endif %}{% endblock %}
 
 {% block content %}
 <section class="section">

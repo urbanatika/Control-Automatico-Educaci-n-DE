@@ -18,6 +18,7 @@ DJANGO_APPS = [
     "django.contrib.sessions",
     "django.contrib.messages",
     "django.contrib.staticfiles",
+    "django.contrib.sitemaps",
 ]
 
 THIRD_PARTY_APPS = []
@@ -101,6 +102,12 @@ LOGOUT_REDIRECT_URL = "core:home"
 # Marca / contenido del sitio
 SITE_NAME = os.environ.get("SITE_NAME", "Diego Elorza | Control Automático")
 SITE_OWNER_NAME = os.environ.get("SITE_OWNER_NAME", "Diego Elorza")
+SITE_DOMAIN = os.environ.get("SITE_DOMAIN", "controlautomatico-app.azurewebsites.net")
+CONTACT_EMAIL = os.environ.get("CONTACT_EMAIL", "diego@urbanatika.org")
+
+# Identidad legal (usada en Términos y Condiciones / Política de Privacidad)
+LEGAL_ENTITY_NAME = os.environ.get("LEGAL_ENTITY_NAME", "Urbanatika")
+LEGAL_ENTITY_RUT = os.environ.get("LEGAL_ENTITY_RUT", "65.177.213-3")
 
 # Mercado Pago (usa credenciales de prueba primero — ver .env.example)
 MERCADOPAGO_ACCESS_TOKEN = os.environ.get("MERCADOPAGO_ACCESS_TOKEN", "")

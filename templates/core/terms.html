@@ -1,0 +1,130 @@
+{% extends "base.html" %}
+
+{% block title %}Términos y Condiciones · {{ site_name }}{% endblock %}
+{% block meta_description %}Términos y condiciones de uso y suscripción de {{ site_name }}.{% endblock %}
+
+{% block extra_head %}
+<style>
+  .legal-article h2 { font-size:1.35rem; margin-top:2.2rem; }
+  .legal-article h3 { font-size:1.05rem; margin-top:1.4rem; }
+  .legal-article p, .legal-article li { color:var(--text-muted); line-height:1.65; }
+  .legal-article ul { padding-left:1.3rem; margin:0.6rem 0; }
+  .legal-article li { margin-bottom:0.4rem; }
+  .legal-article section + section { margin-top:0.5rem; }
+</style>
+{% endblock %}
+
+{% block content %}
+<section class="section">
+  <div class="container legal-article" style="max-width:820px;">
+    <span class="eyebrow" style="color:#0b5fb3;">Legal</span>
+    <h1 style="font-size:2.2rem;">Términos y Condiciones</h1>
+    <p style="color:var(--text-soft);font-size:0.9rem;">Última actualización: 11 de agosto de 2026.</p>
+
+    <div class="track-card" style="margin-top:24px;">
+      <p style="margin:0;">
+        Estos Términos y Condiciones regulan el acceso y uso de {{ site_name }} (el "Sitio"), operado por
+        {{ legal_entity_name }}, RUT {{ legal_entity_rut }} (el "Prestador"). Al crear una cuenta, suscribirte
+        o utilizar el Sitio, aceptas estos términos en su totalidad. Si no estás de acuerdo, no debes usar el Sitio.
+      </p>
+    </div>
+
+    <section>
+      <h2>1. Objeto del servicio</h2>
+      <p>
+        El Sitio ofrece cursos y clases en línea sobre control automático (control lineal, control no lineal,
+        linealización de sistemas, estrategias avanzadas, historia de la disciplina, herramientas de diseño
+        y aplicaciones de laboratorio e industria), a los que se accede mediante una suscripción paga.
+      </p>
+    </section>
+
+    <section>
+      <h2>2. Cuentas de usuario</h2>
+      <ul>
+        <li>Debes proporcionar información veraz y mantenerla actualizada al crear tu cuenta.</li>
+        <li>Eres responsable de la confidencialidad de tu contraseña y de toda actividad realizada desde tu cuenta.</li>
+        <li>La cuenta es de uso personal e intransferible; no está permitido compartir credenciales de acceso ni el acceso a los cursos con terceros.</li>
+        <li>Nos reservamos el derecho de suspender o cerrar cuentas que incumplan estos Términos.</li>
+      </ul>
+    </section>
+
+    <section>
+      <h2>3. Suscripciones y pagos</h2>
+      <ul>
+        <li>El acceso a los cursos requiere una suscripción activa, en modalidad mensual o anual, con precios expresados en pesos chilenos (CLP) publicados en la página de <a href="{% url 'subscriptions:pricing' %}">Precios</a>.</li>
+        <li>Los pagos se procesan a través de Mercado Pago. El Prestador no almacena los datos de tu tarjeta ni medios de pago; dicha información es tratada directamente por Mercado Pago conforme a sus propias políticas.</li>
+        <li>Las suscripciones se renuevan automáticamente al final de cada período (mensual o anual) mediante el mecanismo de pago recurrente de Mercado Pago, hasta que se cancelen.</li>
+        <li>El Prestador puede modificar los precios de los planes hacia adelante; los cambios no afectan períodos ya pagados y se notificarán en el Sitio con antelación razonable.</li>
+      </ul>
+    </section>
+
+    <section>
+      <h2>4. Cancelación y reembolsos</h2>
+      <ul>
+        <li>Puedes cancelar tu suscripción en cualquier momento desde tu panel de cuenta. La cancelación detiene la renovación automática; conservas el acceso a los cursos hasta el final del período ya pagado.</li>
+        <li>No se realizan devoluciones ni reembolsos proporcionales por el tiempo no utilizado dentro de un período ya pagado, salvo que la ley aplicable disponga lo contrario.</li>
+        <li>De conformidad con la Ley N.º 19.496 sobre Protección de los Derechos de los Consumidores, dispones de un plazo de 10 días corridos desde la contratación para ejercer el derecho de retracto, siempre que no hayas consumido de forma sustancial el contenido del curso durante ese plazo. Para ejercerlo, escribe a {{ contact_email }}.</li>
+      </ul>
+    </section>
+
+    <section>
+      <h2>5. Propiedad intelectual</h2>
+      <p>
+        Todos los videos, textos, materiales y demás contenidos del Sitio son propiedad del Prestador o se
+        utilizan con la debida autorización, y están protegidos por la normativa de propiedad intelectual.
+        La suscripción otorga una licencia personal, limitada, no exclusiva e intransferible para visualizar
+        el contenido con fines de aprendizaje individual. Queda prohibida su reproducción, distribución,
+        descarga, comunicación pública o uso comercial sin autorización expresa y escrita del Prestador.
+      </p>
+    </section>
+
+    <section>
+      <h2>6. Disponibilidad y modificaciones del servicio</h2>
+      <p>
+        El Prestador procura mantener el Sitio disponible de forma continua, pero puede suspenderlo
+        temporalmente por mantenimiento, actualizaciones o causas de fuerza mayor. El catálogo de cursos
+        y lecciones puede ampliarse, modificarse o reordenarse en el tiempo.
+      </p>
+    </section>
+
+    <section>
+      <h2>7. Limitación de responsabilidad</h2>
+      <p>
+        El contenido del Sitio tiene fines educativos e informativos. El Prestador no garantiza resultados
+        específicos derivados del uso del material y no será responsable por daños indirectos derivados del
+        uso o la imposibilidad de uso del Sitio, salvo en los casos en que la ley chilena disponga
+        responsabilidad de forma imperativa.
+      </p>
+    </section>
+
+    <section>
+      <h2>8. Modificaciones de estos Términos</h2>
+      <p>
+        Estos Términos pueden actualizarse periódicamente. Los cambios relevantes se publicarán en esta
+        misma página indicando la fecha de última actualización. El uso continuado del Sitio tras una
+        modificación implica la aceptación de los nuevos términos.
+      </p>
+    </section>
+
+    <section>
+      <h2>9. Ley aplicable y jurisdicción</h2>
+      <p>
+        Estos Términos se rigen por las leyes de la República de Chile. Cualquier controversia derivada de
+        su interpretación o aplicación se someterá a los tribunales ordinarios de justicia de Chile.
+      </p>
+    </section>
+
+    <section>
+      <h2>10. Contacto</h2>
+      <p>
+        Para consultas sobre estos Términos, escríbenos a
+        <a href="mailto:{{ contact_email }}">{{ contact_email }}</a>.
+      </p>
+    </section>
+
+    <p style="margin-top:2rem;">
+      Consulta también nuestra <a href="{% url 'core:privacy' %}">Política de Privacidad</a>.
+    </p>
+  </div>
+</section>
+{% endblock %}

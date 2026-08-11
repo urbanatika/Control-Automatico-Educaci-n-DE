@@ -1,6 +1,7 @@
 {% extends "base.html" %}
 
 {% block title %}Precios · {{ site_name }}{% endblock %}
+{% block meta_description %}Planes de suscripción mensual y anual para acceder a todos los cursos de control automático de {{ site_name }}. Pago seguro con Mercado Pago.{% endblock %}
 
 {% block content %}
 <section class="section">
@@ -76,6 +77,10 @@
 
     <p class="text-center" style="margin-top:24px;color:var(--text-soft);font-size:0.85rem;">
       Precios en pesos chilenos (CLP), el equivalente en dólares es referencial. Ajusta los montos exactos en tu archivo <code>.env</code>.
+    </p>
+    <p class="text-center" style="margin-top:8px;color:var(--text-soft);font-size:0.82rem;">
+      Al suscribirte aceptas los <a href="{% url 'core:terms' %}">Términos y Condiciones</a> y la
+      <a href="{% url 'core:privacy' %}">Política de Privacidad</a>.
     </p>
   </div>
 </section>

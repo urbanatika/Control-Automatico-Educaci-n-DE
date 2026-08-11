@@ -17,6 +17,11 @@
             {% if field.errors %}<div class="form-errors">{{ field.errors|striptags }}</div>{% endif %}
           </div>
         {% endfor %}
+        <p style="font-size:0.82rem;color:var(--text-soft);">
+          Al crear una cuenta, aceptas los
+          <a href="{% url 'core:terms' %}">Términos y Condiciones</a> y la
+          <a href="{% url 'core:privacy' %}">Política de Privacidad</a>.
+        </p>
         <button type="submit" class="btn btn-primary btn-block">Crear cuenta</button>
       </form>
       <p class="auth-switch">¿Ya tienes cuenta? <a href="{% url 'accounts:login' %}">Inicia sesión</a></p>

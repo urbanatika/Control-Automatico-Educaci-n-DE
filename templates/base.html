@@ -4,7 +4,25 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>{% block title %}{{ site_name }}{% endblock %}</title>
-  <meta name="description" content="{% block meta_description %}Cursos y clases de control automático: control lineal, no lineal, linealización, estrategias avanzadas, historia, herramientas y aplicaciones de laboratorio e industriales.{% endblock %}">
+  {% block meta_description_tag %}<meta name="description" content="{% block meta_description %}Cursos y clases de control automático: control lineal, no lineal, linealización, estrategias avanzadas, historia, herramientas y aplicaciones de laboratorio e industriales.{% endblock %}">{% endblock %}
+  <link rel="canonical" href="{{ request.build_absolute_uri }}">
+
+  <link rel="icon" type="image/svg+xml" href="{% static 'images/favicon.svg' %}">
+  <link rel="apple-touch-icon" href="{% static 'images/favicon.svg' %}">
+
+  <meta property="og:site_name" content="{{ site_name }}">
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="{{ request.build_absolute_uri }}">
+  <meta property="og:title" content="{% block og_title %}{{ site_name }}{% endblock %}">
+  <meta property="og:description" content="{% block og_description %}Cursos y clases de control automático: control lineal, no lineal, linealización, estrategias avanzadas, historia, herramientas y aplicaciones de laboratorio e industriales.{% endblock %}">
+  <meta property="og:image" content="{% block og_image %}{{ request.scheme }}://{{ request.get_host }}{% static 'images/diego-elorza.jpg' %}{% endblock %}">
+  <meta property="og:locale" content="es_CL">
+
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="{% block twitter_title %}{{ site_name }}{% endblock %}">
+  <meta name="twitter:description" content="{% block twitter_description %}Cursos y clases de control automático: control lineal, no lineal, linealización, estrategias avanzadas, historia, herramientas y aplicaciones de laboratorio e industriales.{% endblock %}">
+  <meta name="twitter:image" content="{% block twitter_image %}{{ request.scheme }}://{{ request.get_host }}{% static 'images/diego-elorza.jpg' %}{% endblock %}">
+
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Space+Grotesk:wght@600;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="{% static 'css/style.css' %}">
@@ -76,9 +94,17 @@
             {% endif %}
           </ul>
         </div>
+        <div>
+          <h4>Legal</h4>
+          <ul>
+            <li><a href="{% url 'core:terms' %}">Términos y Condiciones</a></li>
+            <li><a href="{% url 'core:privacy' %}">Política de Privacidad</a></li>
+            <li><a href="mailto:{{ contact_email }}">{{ contact_email }}</a></li>
+          </ul>
+        </div>
       </div>
       <div class="footer-bottom">
-        <span>&copy; {% now "Y" %} Diego Elorza. Todos los derechos reservados.</span>
+        <span>&copy; {% now "Y" %} {{ legal_entity_name }}. Todos los derechos reservados.</span>
         <span>Hecho para ingenieros, estudiantes y curiosos del control automático.</span>
       </div>
     </div>
