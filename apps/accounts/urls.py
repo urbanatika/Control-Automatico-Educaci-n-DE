@@ -7,6 +7,8 @@ app_name = "accounts"
 
 urlpatterns = [
     path("registro/", views.SignupView.as_view(), name="signup"),
+    path("registro/verifica-tu-correo/", views.VerifyEmailSentView.as_view(), name="verify_email_sent"),
+    path("registro/verificar/<uidb64>/<token>/", views.VerifyEmailView.as_view(), name="verify_email"),
     path(
         "iniciar-sesion/",
         auth_views.LoginView.as_view(template_name="accounts/login.html"),

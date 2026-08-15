@@ -113,6 +113,19 @@ LEGAL_ENTITY_RUT = os.environ.get("LEGAL_ENTITY_RUT", "65.177.213-3")
 CONTACT_FORM_RECIPIENT = os.environ.get("CONTACT_FORM_RECIPIENT", "contacto@urbanatika.org")
 DEFAULT_FROM_EMAIL = os.environ.get("DEFAULT_FROM_EMAIL", f"{SITE_OWNER_NAME} <{CONTACT_EMAIL}>")
 
+# Formulario de contacto vía Google Forms (mismo mecanismo que usa urbanatika.org):
+# el navegador envía la respuesta directamente a Google Forms, sin pasar por el
+# backend, y Google Forms notifica por correo a contacto@urbanatika.org. Así se
+# evita depender de credenciales SMTP para este formulario.
+# Ver instrucciones de configuración en templates/core/contact.html.
+GOOGLE_CONTACT_FORM_ID = os.environ.get(
+    "GOOGLE_CONTACT_FORM_ID", "1FAIpQLSeLDTnTq23bQSybQdb9TtpV46gVreg9UtI0wT1VfD0AS-gEIg"
+)
+GOOGLE_CONTACT_FORM_FIELD_NAME = os.environ.get("GOOGLE_CONTACT_FORM_FIELD_NAME", "entry.758886228")
+GOOGLE_CONTACT_FORM_FIELD_EMAIL = os.environ.get("GOOGLE_CONTACT_FORM_FIELD_EMAIL", "entry.2094448803")
+GOOGLE_CONTACT_FORM_FIELD_PHONE = os.environ.get("GOOGLE_CONTACT_FORM_FIELD_PHONE", "entry.567483978")
+GOOGLE_CONTACT_FORM_FIELD_MESSAGE = os.environ.get("GOOGLE_CONTACT_FORM_FIELD_MESSAGE", "entry.130546267")
+
 # Redes sociales de Diego Elorza (footer). Deja en blanco para ocultar un ícono.
 SOCIAL_INSTAGRAM_URL = os.environ.get("SOCIAL_INSTAGRAM_URL", "https://www.instagram.com/diegoelorza/")
 SOCIAL_LINKEDIN_URL = os.environ.get("SOCIAL_LINKEDIN_URL", "https://www.linkedin.com/in/diegoelorza/")

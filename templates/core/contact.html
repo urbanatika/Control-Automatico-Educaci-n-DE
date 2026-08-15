@@ -13,20 +13,35 @@
       responderemos a la brevedad a través de {{ contact_form_recipient }}.
     </p>
 
-    <form method="post" class="mt-lg" style="max-width:520px;">
-      {% csrf_token %}
-      {% for field in form %}
-        {% if field.name != "honeypot" %}
-          <div class="form-field">
-            <label for="{{ field.id_for_label }}">{{ field.label }}</label>
-            {{ field }}
-            {% if field.help_text %}<div class="form-help">{{ field.help_text|safe }}</div>{% endif %}
-            {% if field.errors %}<div class="form-errors">{{ field.errors|striptags }}</div>{% endif %}
-          </div>
-        {% endif %}
-      {% endfor %}
-      {{ form.honeypot }}
-      <button type="submit" class="btn btn-primary btn-block">Enviar mensaje</button>
+    <ul class="messages" id="formSuccess" style="display:none;">
+      <li class="success">Tu mensaje fue enviado. Te responderemos a la brevedad.</li>
+    </ul>
+    <ul class="messages" id="formError" style="display:none;">
+      <li class="error">
+        No se pudo enviar tu mensaje por un problema técnico. Escríbenos directamente a
+        <a href="mailto:{{ contact_form_recipient }}">{{ contact_form_recipient }}</a>.
+      </li>
+    </ul>
+
+    <form id="contactForm" class="mt-lg" style="max-width:520px;" novalidate>
+      <div class="form-field">
+        <label for="id_name">Nombre</label>
+        <input type="text" id="id_name" name="name" maxlength="120" required>
+      </div>
+      <div class="form-field">
+        <label for="id_email">Correo electrónico</label>
+        <input type="email" id="id_email" name="email" required>
+      </div>
+      <div class="form-field">
+        <label for="id_phone">Teléfono de contacto</label>
+        <input type="tel" id="id_phone" name="phone" maxlength="30" required>
+      </div>
+      <div class="form-field">
+        <label for="id_message">Mensaje</label>
+        <textarea id="id_message" name="message" rows="6" required></textarea>
+      </div>
+      <input type="text" name="honeypot" autocomplete="off" tabindex="-1" style="position:absolute;left:-9999px;">
+      <button type="submit" class="btn btn-primary btn-block" id="contactSubmitBtn">Enviar mensaje</button>
     </form>
 
     <p style="margin-top:24px;color:var(--text-soft);font-size:0.9rem;">
@@ -35,4 +50,123 @@
     </p>
   </div>
 </section>
+
+<script>
+  /* ══════════════════════════════════════════════════════════
+     FORMULARIO DE CONTACTO — ENVÍO A GOOGLE FORMS
+     Mismo mecanismo que usa urbanatika.org: el navegador envía la
+     respuesta directamente a Google Forms (sin pasar por Django ni
+     SMTP), y Google Forms notifica por correo a quien administre
+     ese formulario.
+
+     Este sitio ya usa el formulario dedicado "Formulario de Contacto
+     Urbanatika control automatico" (los valores por defecto están en
+     settings/base.py). Si algún día necesitas apuntar a otro form:
+       1. Crea/duplica un Google Form con 4 preguntas de texto/párrafo:
+          Nombre completo, Correo de contacto, Teléfono de contacto,
+          Consulta o mensaje.
+       2. En el Form, activa "Recibir notificaciones por correo de
+          nuevas respuestas" (menú ⋮ → Recibir notificaciones...) con
+          una cuenta que tenga acceso a contacto@urbanatika.org, o
+          agrega un reenvío/filtro desde esa cuenta.
+       3. Copia el FORM_ID desde el link público (Enviar → ícono <>):
+          https://docs.google.com/forms/d/e/[FORM_ID]/viewform
+       4. Abre el formulario en modo Vista previa, clic derecho en
+          cada campo → Inspeccionar → copia el name="entry.NNNNNNN".
+       5. Define las variables de entorno GOOGLE_CONTACT_FORM_ID y
+          GOOGLE_CONTACT_FORM_FIELD_{NAME,EMAIL,PHONE,MESSAGE} en
+          .env / la configuración de Azure App Service.
+     Mientras no esté configurado, el formulario cae automáticamente
+     al fallback de mailto: (igual que en urbanatika.org).
+  ══════════════════════════════════════════════════════════ */
+  const GOOGLE_FORM_CONFIG = {
+    formId: "{{ google_contact_form_id|escapejs }}",
+    fields: {
+      name: "{{ google_contact_form_field_name|escapejs }}",
+      email: "{{ google_contact_form_field_email|escapejs }}",
+      phone: "{{ google_contact_form_field_phone|escapejs }}",
+      message: "{{ google_contact_form_field_message|escapejs }}",
+    },
+  };
+  const CONTACT_EMAIL = "{{ contact_form_recipient|escapejs }}";
+
+  const form = document.getElementById("contactForm");
+  const formSuccess = document.getElementById("formSuccess");
+  const formError = document.getElementById("formError");
+  const submitBtn = document.getElementById("contactSubmitBtn");
+
+  function fallbackMailto(name, email, phone, message) {
+    const mailtoSubject = encodeURIComponent(`[${"{{ site_name|escapejs }}"}] Nuevo contacto de ${name}`);
+    const body = encodeURIComponent(`Nombre: ${name}\nCorreo: ${email}\nTeléfono: ${phone}\n\n${message}`);
+    window.location.href = `mailto:${CONTACT_EMAIL}?subject=${mailtoSubject}&body=${body}`;
+  }
+
+  form.addEventListener("submit", async (e) => {
+    e.preventDefault();
+    formError.style.display = "none";
+    formSuccess.style.display = "none";
+
+    if (form.querySelector('[name="honeypot"]').value) {
+      // Bot: fingimos éxito sin enviar nada.
+      form.style.display = "none";
+      formSuccess.style.display = "flex";
+      return;
+    }
+
+    const name = form.querySelector('[name="name"]').value.trim();
+    const email = form.querySelector('[name="email"]').value.trim();
+    const phone = form.querySelector('[name="phone"]').value.trim();
+    const message = form.querySelector('[name="message"]').value.trim();
+
+    if (!name || !email || !phone || !message) {
+      formError.style.display = "flex";
+      return;
+    }
+
+    submitBtn.disabled = true;
+    const formConfigured = Boolean(GOOGLE_FORM_CONFIG.formId);
+
+    if (formConfigured) {
+      try {
+        const GFORM_URL = `https://docs.google.com/forms/d/e/${GOOGLE_FORM_CONFIG.formId}/formResponse`;
+        const iframe = document.createElement("iframe");
+        iframe.name = "gform_iframe";
+        iframe.style.display = "none";
+        document.body.appendChild(iframe);
+
+        const hiddenForm = document.createElement("form");
+        hiddenForm.method = "POST";
+        hiddenForm.action = GFORM_URL;
+        hiddenForm.target = "gform_iframe";
+        hiddenForm.style.display = "none";
+
+        const values = { name, email, phone, message };
+        Object.entries(GOOGLE_FORM_CONFIG.fields).forEach(([key, entry]) => {
+          const input = document.createElement("input");
+          input.type = "hidden";
+          input.name = entry;
+          input.value = values[key];
+          hiddenForm.appendChild(input);
+        });
+
+        document.body.appendChild(hiddenForm);
+        hiddenForm.submit();
+        await new Promise((r) => setTimeout(r, 1200));
+
+        document.body.removeChild(hiddenForm);
+        document.body.removeChild(iframe);
+        form.style.display = "none";
+        formSuccess.style.display = "flex";
+      } catch (err) {
+        console.error(err);
+        fallbackMailto(name, email, phone, message);
+      } finally {
+        submitBtn.disabled = false;
+      }
+    } else {
+      fallbackMailto(name, email, phone, message);
+      submitBtn.disabled = false;
+    }
+  });
+</script>
 {% endblock %}

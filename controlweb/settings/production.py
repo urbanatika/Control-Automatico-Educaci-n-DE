@@ -1,8 +1,25 @@
 import os
 
+import sentry_sdk
+from sentry_sdk.integrations.django import DjangoIntegration
+
 from .base import *  # noqa: F401,F403
 
 DEBUG = False
+
+# Monitoreo de errores (plan free de Sentry alcanza de sobra para este tráfico).
+# Crea un proyecto Django en https://sentry.io, copia su DSN y defínelo como
+# variable de entorno SENTRY_DSN en Azure App Service (Configuration > Application
+# settings). Mientras SENTRY_DSN esté vacío, esto queda desactivado sin romper nada.
+SENTRY_DSN = os.environ.get("SENTRY_DSN", "")
+if SENTRY_DSN:
+    sentry_sdk.init(
+        dsn=SENTRY_DSN,
+        integrations=[DjangoIntegration()],
+        send_default_pii=False,
+        traces_sample_rate=0.0,
+        environment=os.environ.get("SENTRY_ENVIRONMENT", "production"),
+    )
 
 MIDDLEWARE = list(MIDDLEWARE)
 MIDDLEWARE.insert(1, "whitenoise.middleware.WhiteNoiseMiddleware")

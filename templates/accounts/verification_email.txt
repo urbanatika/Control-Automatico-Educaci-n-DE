@@ -1,0 +1,7 @@
+Hola {{ user.first_name|default:user.username }},
+
+Gracias por registrarte en {{ site_name }}. Confirma tu cuenta haciendo clic en el siguiente enlace:
+
+{{ link }}
+
+Si no creaste esta cuenta, puedes ignorar este correo.
