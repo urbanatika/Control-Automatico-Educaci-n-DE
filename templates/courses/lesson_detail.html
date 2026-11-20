@@ -16,6 +16,18 @@
           {% if can_watch and lesson.vimeo_id %}
             <iframe src="https://player.vimeo.com/video/{{ lesson.vimeo_id }}"
                     allow="autoplay; fullscreen; picture-in-picture" allowfullscreen></iframe>
+          {% elif can_watch and lesson.youtube_id %}
+            <iframe src="https://www.youtube-nocookie.com/embed/{{ lesson.youtube_id }}?rel=0&cc_load_policy=1&cc_lang_pref=es"
+                    title="{{ lesson.title }}"
+                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                    allowfullscreen></iframe>
+          {% elif can_watch and lesson.video_file %}
+            <video controls preload="metadata" {% if lesson.thumbnail %}poster="{{ lesson.thumbnail.url }}"{% endif %}>
+              <source src="{{ lesson.video_file.url }}" type="video/mp4">
+              {% if lesson.subtitles_file %}
+                <track kind="subtitles" src="{{ lesson.subtitles_file.url }}" srclang="es" label="Español" default>
+              {% endif %}
+            </video>
           {% elif can_watch %}
             <div class="player-locked">
               <div class="lock-icon">🎬</div>
@@ -31,6 +43,7 @@
         </div>
 
         <div class="detail-header" style="margin-top:24px;">
+          {% if lesson.is_draft %}<span class="badge badge-draft">Borrador · solo visible para el equipo</span>{% endif %}
           {% if lesson.is_free_preview %}<span class="badge badge-free">Vista previa gratuita</span>{% endif %}
           <h1 style="font-size:1.7rem;margin-top:10px;">{{ lesson.title }}</h1>
           <p style="color:var(--text-muted);">{{ lesson.duration_minutes }} min · Módulo: {{ lesson.module.title }}</p>
@@ -38,6 +51,60 @@
 
         {% if lesson.description %}
           <p style="color:var(--text-muted);white-space:pre-line;">{{ lesson.description }}</p>
+        {% endif %}
+
+        {% if can_watch and lesson.attachments.all %}
+          <div class="lesson-section">
+            <h3>Materiales de la clase</h3>
+            <ul class="attachment-list">
+              {% for a in lesson.attachments.all %}
+                <li><a href="{{ a.file.url }}" download>{{ a.title }}</a>{% if a.extension %} <span class="attachment-ext">{{ a.extension }}</span>{% endif %}</li>
+              {% endfor %}
+            </ul>
+          </div>
+        {% endif %}
+
+        {% if can_watch and lesson.quiz_questions.all %}
+          <div class="lesson-section quiz" id="quiz">
+            <h3>Quiz de la clase</h3>
+            <p style="color:var(--text-muted);">Elige una respuesta en cada pregunta y revisa tus resultados.</p>
+            <form id="quiz-form">
+              {% for q in lesson.quiz_questions.all %}
+                <fieldset class="quiz-question" data-question="{{ q.pk }}">
+                  <legend>{{ forloop.counter }}. {{ q.text }}</legend>
+                  {% for c in q.choices.all %}
+                    <label class="quiz-choice">
+                      <input type="radio" name="q{{ q.pk }}" value="{{ c.pk }}" data-correct="{{ c.is_correct|yesno:'1,0' }}">
+                      <span>{{ c.text }}</span>
+                    </label>
+                  {% endfor %}
+                  {% if q.explanation %}<p class="quiz-feedback" hidden>{{ q.explanation }}</p>{% endif %}
+                </fieldset>
+              {% endfor %}
+              <button type="submit" class="btn btn-primary">Revisar respuestas</button>
+              <p class="quiz-score" aria-live="polite"></p>
+            </form>
+          </div>
+          <script>
+            (function () {
+              var form = document.getElementById("quiz-form");
+              form.addEventListener("submit", function (ev) {
+                ev.preventDefault();
+                var preguntas = form.querySelectorAll(".quiz-question"), buenas = 0;
+                preguntas.forEach(function (fs) {
+                  var marcada = fs.querySelector("input:checked");
+                  var ok = marcada && marcada.dataset.correct === "1";
+                  if (ok) buenas++;
+                  fs.classList.remove("is-right", "is-wrong");
+                  fs.classList.add(ok ? "is-right" : "is-wrong");
+                  var fb = fs.querySelector(".quiz-feedback");
+                  if (fb) fb.hidden = false;
+                });
+                form.querySelector(".quiz-score").textContent =
+                  "Respuestas correctas: " + buenas + " de " + preguntas.length + ".";
+              });
+            })();
+          </script>
         {% endif %}
       </div>
 
@@ -47,7 +114,7 @@
           <div class="module-block">
             <div class="module-title">{{ module.title }}</div>
             {% for l in module.lessons.all %}
-              <a href="{{ l.get_absolute_url }}"
+              <a href="{{ l.get_absolute_url }}" {% if l.is_draft %}title="Borrador"{% endif %}
                  class="lesson-link {% if l == lesson %}active{% endif %} {% if l.is_free_preview %}is-free{% elif not has_access %}is-locked{% endif %}">
                 <span class="status-icon">
                   {% if has_access or l.is_free_preview %}▶{% else %}🔒{% endif %}

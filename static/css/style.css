@@ -1003,3 +1003,60 @@ p {
     grid-template-columns: 1fr;
   }
 }
+
+/* ── Lección: video propio, borrador, materiales y quiz ─────────────── */
+.player-wrap video {
+  width: 100%;
+  height: 100%;
+  display: block;
+  background: #000;
+}
+
+.badge-draft { background: #fdecea; color: #b3261e; }
+
+.lesson-section {
+  margin-top: 32px;
+  padding-top: 24px;
+  border-top: 1px solid var(--border);
+}
+
+.attachment-list {
+  list-style: none;
+  padding: 0;
+  margin: 12px 0 0;
+  display: grid;
+  gap: 8px;
+}
+
+.attachment-list a { font-weight: 600; }
+
+.attachment-ext {
+  font-size: 0.75rem;
+  color: var(--text-soft);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 1px 6px;
+  margin-left: 6px;
+}
+
+.quiz-question {
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  padding: 16px 20px;
+  margin: 0 0 16px;
+}
+
+.quiz-question legend { font-weight: 600; padding: 0 6px; }
+
+.quiz-choice {
+  display: flex;
+  gap: 10px;
+  align-items: flex-start;
+  padding: 6px 0;
+  cursor: pointer;
+}
+
+.quiz-question.is-right { border-color: #1a7f37; background: #f3fbf5; }
+.quiz-question.is-wrong { border-color: #b3261e; background: #fdf4f3; }
+.quiz-feedback { margin: 8px 0 0; color: var(--text-muted); font-size: 0.95rem; }
+.quiz-score { margin-top: 12px; font-weight: 600; }

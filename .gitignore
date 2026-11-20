@@ -7,3 +7,5 @@ db.sqlite3
 !/media/.gitkeep
 .vscode/
 .DS_Store
+.venv/
+credenciales_local.txt
