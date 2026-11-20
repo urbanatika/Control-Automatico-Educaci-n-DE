@@ -1,12 +1,29 @@
 from django.contrib import admin
 
-from .models import Course, Lesson, Module, Track
+from .models import Course, Lesson, LessonAttachment, Module, QuizChoice, QuizQuestion, Track
 
 
 class LessonInline(admin.TabularInline):
     model = Lesson
     extra = 1
+    fields = ["title", "slug", "order", "duration_minutes", "is_free_preview", "is_draft"]
     prepopulated_fields = {"slug": ("title",)}
+
+
+class LessonAttachmentInline(admin.TabularInline):
+    model = LessonAttachment
+    extra = 0
+
+
+class QuizQuestionInline(admin.StackedInline):
+    model = QuizQuestion
+    extra = 0
+    show_change_link = True
+
+
+class QuizChoiceInline(admin.TabularInline):
+    model = QuizChoice
+    extra = 0
 
 
 class ModuleInline(admin.TabularInline):
@@ -39,6 +56,20 @@ class ModuleAdmin(admin.ModelAdmin):
 
 @admin.register(Lesson)
 class LessonAdmin(admin.ModelAdmin):
-    list_display = ["title", "module", "duration_minutes", "is_free_preview", "order"]
-    list_filter = ["module__course", "is_free_preview"]
+    list_display = ["title", "module", "duration_minutes", "is_free_preview", "is_draft", "order"]
+    list_filter = ["module__course", "is_free_preview", "is_draft"]
+    list_editable = ["is_draft"]
     prepopulated_fields = {"slug": ("title",)}
+    inlines = [LessonAttachmentInline, QuizQuestionInline]
+    fieldsets = [
+        (None, {"fields": ["module", "title", "slug", "description", "order", "duration_minutes"]}),
+        ("Video", {"fields": ["vimeo_id", "video_url", "video_file", "subtitles_file", "thumbnail"]}),
+        ("Visibilidad", {"fields": ["is_draft", "is_free_preview", "source_key"]}),
+    ]
+
+
+@admin.register(QuizQuestion)
+class QuizQuestionAdmin(admin.ModelAdmin):
+    list_display = ["text", "lesson", "order"]
+    list_filter = ["lesson__module__course"]
+    inlines = [QuizChoiceInline]
